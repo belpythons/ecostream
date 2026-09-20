@@ -21,6 +21,8 @@ import {
   Recycle,
   Search,
   ShieldCheck,
+  Sun,
+  Moon,
   Truck,
   Users,
   X,
@@ -140,12 +142,21 @@ export default function Page() {
   const [activeSheet, setActiveSheet] = useState('Dashboard')
   const [tableSearch, setTableSearch] = useState('')
   const [weighingIncoming, setWeighingIncoming] = useState('0')
-  const [weighingResidue, setWeighingResidue] = useState('0')
+  const [weighingOrganic, setWeighingOrganic] = useState('0')
+  const [weighingB3, setWeighingB3] = useState('0')
+  const [weighingShift, setWeighingShift] = useState('Pagi')
+  const [weighingZone, setWeighingZone] = useState('Zone 3')
+  const [manifestCode, setManifestCode] = useState('')
+  const [darkMode, setDarkMode] = useState(false)
+  const [inorganicWeights, setInorganicWeights] = useState<Record<string, string>>({})
+  const inorganicTypes = ['Kardus', 'Botol', 'Duplek', 'Kertas', 'Thinwall', 'Piring Telur', 'Plastik']
+  const inorganicTotal = inorganicTypes.reduce((sum, type) => sum + Number(inorganicWeights[type] || 0), 0)
   const filteredRows = balanceRows.filter((row) => `${row.batch} ${row.date}`.toLowerCase().includes(tableSearch.toLowerCase()))
-  const residuePercentage = Number(weighingIncoming) > 0 ? (Number(weighingResidue) / Number(weighingIncoming)) * 100 : 0
+  const weighingResidue = Math.max(0, Number(weighingIncoming) - Number(weighingOrganic) - inorganicTotal - Number(weighingB3))
+  const residuePercentage = Number(weighingIncoming) > 0 ? (weighingResidue / Number(weighingIncoming)) * 100 : 0
 
   return (
-    <main className="min-h-screen bg-[#f6f8f7] text-slate-900">
+    <main className={`min-h-screen text-slate-900 transition-colors ${darkMode ? 'bg-slate-950' : 'bg-[#f6f8f7]'}`}>
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-5 px-5 py-5 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="flex items-center gap-4">
@@ -162,6 +173,9 @@ export default function Page() {
             <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
               <span className="size-2 rounded-full bg-emerald-500" /> Live monitoring
             </div>
+            <Button type="button" variant="outline" size="icon" aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={() => setDarkMode((value) => !value)}>
+              {darkMode ? <Sun data-icon="inline-start" /> : <Moon data-icon="inline-start" />}
+            </Button>
             <Select defaultValue="Implementation Start (July 2026 - Present)">
               <SelectTrigger className="w-full bg-white sm:w-[280px]"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -288,7 +302,7 @@ export default function Page() {
           </Card>
         </section>}
 
-        <Dialog open={isWeighDialogOpen} onOpenChange={setIsWeighDialogOpen}><DialogContent><DialogHeader><DialogTitle>Catat Timbangan Harian</DialogTitle><DialogDescription>Record a new Zone 3 scale ticket with automatic residue validation.</DialogDescription></DialogHeader><div className="grid gap-4 sm:grid-cols-2"><label className="flex flex-col gap-1.5 text-sm font-medium">Tanggal<input type="date" className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label><label className="flex flex-col gap-1.5 text-sm font-medium">Batch / Zone<input placeholder="Z3-1001" className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label><label className="flex flex-col gap-1.5 text-sm font-medium">Timbulan Masuk (kg)<input type="number" min="0" value={weighingIncoming} onChange={(event) => setWeighingIncoming(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label><label className="flex flex-col gap-1.5 text-sm font-medium">Residu TPA (kg)<input type="number" min="0" value={weighingResidue} onChange={(event) => setWeighingResidue(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label></div><div className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${residuePercentage <= 30 ? 'bg-[#f0fdf4]' : 'bg-[#fff7f7]'}`}><span className="text-slate-600">Auto residue percentage</span><strong className={residuePercentage <= 30 ? 'text-[#15803d]' : 'text-[#b91c1c]'}>{residuePercentage.toFixed(1)}% <span className="text-xs font-normal">• {residuePercentage <= 30 ? 'within target' : 'above target'}</span></strong></div><Button type="button" onClick={() => setIsWeighDialogOpen(false)} className="bg-[#0b5d57] hover:bg-[#084a45]">Save daily weighing</Button></DialogContent></Dialog>
+        <Dialog open={isWeighDialogOpen} onOpenChange={setIsWeighDialogOpen}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>Catat Timbangan Harian</DialogTitle><DialogDescription>Lengkapi data timbangan untuk validasi neraca massa Zone 3.</DialogDescription></DialogHeader><div className="grid gap-4 sm:grid-cols-2"><label className="flex flex-col gap-1.5 text-sm font-medium">Tanggal &amp; Shift Catat<input type="date" defaultValue="2026-09-21" className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /><select value={weighingShift} onChange={(event) => setWeighingShift(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal"><option>Pagi</option><option>Siang</option><option>Malam</option></select></label><label className="flex flex-col gap-1.5 text-sm font-medium">Zona Asal<select value={weighingZone} onChange={(event) => setWeighingZone(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal"><option>Zone 3</option><option>Nursery</option><option>Kompleks Perumahan</option></select></label><label className="flex flex-col gap-1.5 text-sm font-medium">Berat Total Timbulan (kg)<input type="number" min="0" value={weighingIncoming} onChange={(event) => setWeighingIncoming(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label><label className="flex flex-col gap-1.5 text-sm font-medium">Berat Organik (kg)<input type="number" min="0" value={weighingOrganic} onChange={(event) => setWeighingOrganic(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /><span className="text-[11px] font-normal text-[#0f766e]">Akan diarahkan ke Nursery Composter</span></label><div className="sm:col-span-2"><p className="mb-2 text-sm font-semibold">Breakdown 7 Jenis Anorganik (kg)</p><div className="grid gap-3 sm:grid-cols-2">{inorganicTypes.map((type) => <div key={type} className="flex items-center gap-2 text-xs"><input type="number" min="0" aria-label={`${type} weight`} value={inorganicWeights[type] || ''} onChange={(event) => setInorganicWeights((current) => ({ ...current, [type]: event.target.value }))} placeholder="0" className="h-8 w-20 rounded-md border border-slate-200 px-2" /><span className="flex-1">{type}</span><label className="flex items-center gap-1 text-[10px] text-slate-500"><input type="checkbox" aria-label={`${type} disalurkan ke Mitra Binaan`} /> Mitra Binaan</label></div>)}</div></div><label className="flex flex-col gap-1.5 text-sm font-medium">Berat Limbah B3 (kg)<input type="number" min="0" value={weighingB3} onChange={(event) => setWeighingB3(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label><label className="flex flex-col gap-1.5 text-sm font-medium">Manifest Code<input value={manifestCode} onChange={(event) => setManifestCode(event.target.value)} placeholder="B3-2026-001" className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label></div><div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-3 text-sm"><span className="text-slate-600">Berat Residu (read-only)</span><strong className="font-mono text-slate-900">{weighingResidue.toFixed(1)} kg</strong></div>{residuePercentage > 30 && <div role="alert" className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm font-semibold text-red-700"><CircleAlert className="mt-0.5 size-4 shrink-0" /> Peringatan: Rasio Residu melebihi target 30% DLH Bontang!</div>}<div className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${residuePercentage <= 30 ? 'bg-[#f0fdf4]' : 'bg-[#fff7f7]'}`}><span className="text-slate-600">Rasio residu otomatis</span><strong className={residuePercentage <= 30 ? 'text-[#15803d]' : 'text-[#b91c1c]'}>{residuePercentage.toFixed(1)}% <span className="text-xs font-normal">• {residuePercentage <= 30 ? 'within target' : 'above target'}</span></strong></div><Button type="button" onClick={() => setIsWeighDialogOpen(false)} className="bg-[#0b5d57] hover:bg-[#084a45]">Simpan Timbangan Harian</Button></DialogContent></Dialog>
 
         <footer className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between"><span>EcoStream Enterprise • PT BADAK NGL • Zone 3</span><span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-emerald-500" /> Data synced from operational log</span></footer>
       </div>
