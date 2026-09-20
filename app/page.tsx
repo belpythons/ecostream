@@ -12,13 +12,18 @@ import {
   Factory,
   Leaf,
   ExternalLink,
+  FileDown,
+  FileText,
+  Filter,
   MapPin,
   PackageCheck,
   Plus,
   Recycle,
+  Search,
   ShieldCheck,
   Truck,
   Users,
+  X,
 } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart'
@@ -110,6 +115,16 @@ const analyticsData = {
   },
 }
 
+const sheetTabs = ['Dashboard', '1. Neraca Massa', '2. Sampah Zone 3', '3. Anorganik Material', '4. Mitra Binaan CSR', '5. & 6. Kompos Nursery', '7. Limbah B3', 'Dust Bin Tracking']
+
+const balanceRows = [
+  { date: '30 Sep 2026', batch: 'Z3-0930', incoming: '640', organic: '442', inorganic: '150', b3: '0', residue: '48', recovery: '92.5%', status: 'Balanced' },
+  { date: '29 Sep 2026', batch: 'Z3-0929', incoming: '612', organic: '425', inorganic: '142', b3: '0', residue: '45', recovery: '92.6%', status: 'Balanced' },
+  { date: '28 Sep 2026', batch: 'Z3-0928', incoming: '598', organic: '411', inorganic: '141', b3: '0', residue: '46', recovery: '92.3%', status: 'Balanced' },
+  { date: '27 Sep 2026', batch: 'Z3-0927', incoming: '574', organic: '396', inorganic: '133', b3: '0', residue: '45', recovery: '92.2%', status: 'Balanced' },
+  { date: '26 Sep 2026', batch: 'Z3-0926', incoming: '620', organic: '430', inorganic: '145', b3: '0', residue: '45', recovery: '92.7%', status: 'Balanced' },
+]
+
 const chartConfig = {
   organic: { label: 'Organik Masuk', color: '#16a34a' },
   compost: { label: 'Kompos Jadi', color: '#0d9488' },
@@ -120,7 +135,14 @@ const chartConfig = {
 
 export default function Page() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isWeighDialogOpen, setIsWeighDialogOpen] = useState(false)
   const [activePeriod, setActivePeriod] = useState<'implementation' | 'baseline'>('implementation')
+  const [activeSheet, setActiveSheet] = useState('Dashboard')
+  const [tableSearch, setTableSearch] = useState('')
+  const [weighingIncoming, setWeighingIncoming] = useState('0')
+  const [weighingResidue, setWeighingResidue] = useState('0')
+  const filteredRows = balanceRows.filter((row) => `${row.batch} ${row.date}`.toLowerCase().includes(tableSearch.toLowerCase()))
+  const residuePercentage = Number(weighingIncoming) > 0 ? (Number(weighingResidue) / Number(weighingIncoming)) * 100 : 0
 
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-slate-900">
@@ -240,6 +262,33 @@ export default function Page() {
             })}
           </Tabs>
         </section>
+
+        <section className="mt-10" aria-label="Database sheet navigation">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+            <div className="flex min-w-max items-center gap-1">
+              {sheetTabs.map((sheet) => <button key={sheet} type="button" onClick={() => setActiveSheet(sheet)} className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${activeSheet === sheet ? 'bg-[#0b5d57] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'}`}>{sheet}</button>)}
+            </div>
+          </div>
+        </section>
+
+        {activeSheet === '1. Neraca Massa' && <section className="mt-5" aria-labelledby="neraca-heading">
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="gap-4 border-b border-slate-100 sm:flex-row sm:items-start sm:justify-between">
+              <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0d9488]">Operational database sheet</p><CardTitle id="neraca-heading" className="mt-1 text-xl">1. Neraca Massa</CardTitle><CardDescription>Daily mass-balance validation for Zone 3 collection and sorting.</CardDescription></div>
+              <Button type="button" onClick={() => setIsWeighDialogOpen(true)} className="shrink-0 bg-[#0b5d57] hover:bg-[#084a45]"><Plus data-icon="inline-start" /> Catat Timbangan Harian</Button>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="mb-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row"><div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" /><input aria-label="Search batch or zone" value={tableSearch} onChange={(event) => setTableSearch(event.target.value)} placeholder="Search batch / zone" className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[#0d9488]/30 sm:w-56" /></div><Button type="button" variant="outline" className="justify-start text-slate-600"><Filter data-icon="inline-start" /> Date range: 01–30 Sep 2026 <ChevronDown data-icon="inline-end" /></Button></div>
+                <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" size="sm"><FileDown data-icon="inline-start" /> Export Excel</Button><Button type="button" variant="outline" size="sm"><FileText data-icon="inline-start" /> Export Laporan DLH Bontang (PDF)</Button></div>
+              </div>
+              <div className="overflow-x-auto rounded-lg border border-slate-200"><table className="w-full min-w-[1120px] text-left text-xs"><thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500"><tr>{['Tanggal','Timbulan Masuk (kg)','Organik (kg)','Anorganik (kg)','B3 (kg)','Residu TPA (kg)','Recovery Rate (%)','Balance Check','Actions'].map((heading) => <th key={heading} className="whitespace-nowrap px-4 py-3 font-bold">{heading}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{filteredRows.map((row) => <tr key={row.batch} className="hover:bg-slate-50"><td className="px-4 py-3 font-semibold text-slate-700">{row.date}<span className="mt-1 block font-mono text-[10px] font-normal text-slate-400">{row.batch}</span></td><td className="px-4 py-3 font-mono">{row.incoming}</td><td className="px-4 py-3 font-mono">{row.organic}</td><td className="px-4 py-3 font-mono">{row.inorganic}</td><td className="px-4 py-3 font-mono">{row.b3}</td><td className="px-4 py-3 font-mono">{row.residue}</td><td className="px-4 py-3 font-mono font-bold text-[#15803d]">{row.recovery}</td><td className="px-4 py-3"><Badge className="gap-1 bg-[#dcfce7] text-[10px] text-[#166534] shadow-none"><Check className="size-3" /> {row.status}</Badge></td><td className="px-4 py-3"><Button type="button" variant="ghost" size="sm">View</Button></td></tr>)}</tbody></table></div>
+              <p className="mt-3 text-xs text-slate-400">Showing {filteredRows.length} of {balanceRows.length} daily records • Formula: Incoming = Organik + Anorganik + B3 + Residu</p>
+            </CardContent>
+          </Card>
+        </section>}
+
+        <Dialog open={isWeighDialogOpen} onOpenChange={setIsWeighDialogOpen}><DialogContent><DialogHeader><DialogTitle>Catat Timbangan Harian</DialogTitle><DialogDescription>Record a new Zone 3 scale ticket with automatic residue validation.</DialogDescription></DialogHeader><div className="grid gap-4 sm:grid-cols-2"><label className="flex flex-col gap-1.5 text-sm font-medium">Tanggal<input type="date" className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label><label className="flex flex-col gap-1.5 text-sm font-medium">Batch / Zone<input placeholder="Z3-1001" className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label><label className="flex flex-col gap-1.5 text-sm font-medium">Timbulan Masuk (kg)<input type="number" min="0" value={weighingIncoming} onChange={(event) => setWeighingIncoming(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label><label className="flex flex-col gap-1.5 text-sm font-medium">Residu TPA (kg)<input type="number" min="0" value={weighingResidue} onChange={(event) => setWeighingResidue(event.target.value)} className="h-9 rounded-lg border border-slate-200 px-3 text-sm font-normal" /></label></div><div className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${residuePercentage <= 30 ? 'bg-[#f0fdf4]' : 'bg-[#fff7f7]'}`}><span className="text-slate-600">Auto residue percentage</span><strong className={residuePercentage <= 30 ? 'text-[#15803d]' : 'text-[#b91c1c]'}>{residuePercentage.toFixed(1)}% <span className="text-xs font-normal">• {residuePercentage <= 30 ? 'within target' : 'above target'}</span></strong></div><Button type="button" onClick={() => setIsWeighDialogOpen(false)} className="bg-[#0b5d57] hover:bg-[#084a45]">Save daily weighing</Button></DialogContent></Dialog>
 
         <footer className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between"><span>EcoStream Enterprise • PT BADAK NGL • Zone 3</span><span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-emerald-500" /> Data synced from operational log</span></footer>
       </div>
