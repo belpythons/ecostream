@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   ArrowDown,
   ArrowRight,
@@ -10,15 +11,19 @@ import {
   ClipboardCheck,
   Factory,
   Leaf,
+  ExternalLink,
   MapPin,
   PackageCheck,
+  Plus,
   Recycle,
   ShieldCheck,
   Truck,
   Users,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -36,6 +41,8 @@ const monthlyData = [
 ]
 
 export default function Page() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-slate-900">
       <header className="border-b border-slate-200 bg-white">
@@ -95,6 +102,41 @@ export default function Page() {
           <Card className="border-slate-200 shadow-sm lg:col-span-2"><CardHeader className="flex flex-row items-center justify-between pb-2"><div><CardTitle className="text-base">Recovery rate</CardTitle><CardDescription>Material recovered from landfill diversion</CardDescription></div><div className="flex items-center gap-1 rounded-full bg-[#dcfce7] px-2.5 py-1 text-xs font-bold text-[#15803d]">↑ 14.5%</div></CardHeader><CardContent><div className="flex items-end gap-3"><p className="text-4xl font-bold tracking-tight text-[#15803d]">92.2<span className="text-xl">%</span></p><p className="mb-1 text-xs text-slate-500">vs baseline</p></div><Progress value={92.2} className="mt-4 h-2 bg-slate-100 [&>div]:bg-[#16a34a]" /><div className="mt-2 flex justify-between text-[11px] text-slate-400"><span>0%</span><span>Target recovery ≥ 70%</span><span>100%</span></div></CardContent></Card>
           <Card className="border-slate-200 shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-base">Distribusi Dust Bin</CardTitle><CardDescription>Zone 3 assets installed</CardDescription></CardHeader><CardContent><div className="flex items-center gap-4"><div className="flex size-14 items-center justify-center rounded-2xl bg-[#e0f2f1] text-[#0f766e]"><Users className="size-6" /></div><div><p className="text-4xl font-bold tracking-tight text-slate-900">42 <span className="text-base font-medium text-slate-400">set</span></p><p className="mt-1 text-xs text-[#15803d]">100% titik aktif</p></div></div></CardContent></Card>
         </section>
+
+        <section className="mt-8 grid gap-5 lg:grid-cols-[7fr_3fr]" aria-label="Operational flow and action plan">
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <CardTitle className="text-base">Diagram Alur Neraca Massa Sampah Zone 3</CardTitle>
+              <CardDescription>Interactive system flow from collection to final treatment</CardDescription>
+            </CardHeader>
+            <CardContent className="p-5">
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                  <div className="flex-1 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-bold text-slate-600">Total Timbulan</p><p className="mt-2 text-2xl font-bold text-slate-900">18.0 <span className="text-xs font-medium text-slate-400">ton</span></p><Badge variant="outline" className="mt-2 text-[10px]">100% massa total</Badge>
+                  </div><ArrowRight className="mx-auto size-5 shrink-0 rotate-90 text-[#0d9488] sm:rotate-0" />
+                  <div className="flex-1 rounded-xl border border-[#99d9d3] bg-[#f0fdfa] p-4"><p className="text-xs font-bold text-[#0f766e]">Fasilitas Pemilahan</p><p className="mt-2 text-2xl font-bold text-slate-900">18.0 <span className="text-xs font-medium text-slate-400">ton</span></p><Badge className="mt-2 bg-[#ccfbf1] text-[10px] text-[#0f766e] shadow-none">100% terproses</Badge></div>
+                </div>
+                <div className="hidden h-5 items-center justify-center sm:flex"><ArrowDown className="size-4 text-[#0d9488]" /></div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {destinations.map(({ label, value, percent, detail, icon: Icon, color }) => <button type="button" key={label} className={`group rounded-xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md ${color === 'green' ? 'border-[#b7e4c0] bg-[#f0fdf4]' : color === 'teal' ? 'border-[#a8ded8] bg-[#f0fdfa]' : color === 'red' ? 'border-[#f5c2c2] bg-[#fff7f7]' : 'border-slate-300 bg-slate-100'}`}><div className="flex items-start justify-between gap-2"><div><p className="text-xs font-bold text-slate-700">{label}</p><p className="mt-2 text-xl font-bold text-slate-900">{value} <span className="text-xs font-medium text-slate-400">ton</span></p></div><Icon className="size-4 text-[#0d9488]" /></div><div className="mt-3 flex items-center justify-between gap-2"><span className="text-[11px] text-slate-500">{detail}</span><span className="font-mono text-[11px] font-bold text-slate-600">{percent}</span></div><div className="mt-3 flex items-center gap-1 text-[10px] font-semibold text-[#0f766e] opacity-0 transition group-hover:opacity-100"><ExternalLink className="size-3" /> Open linked sheet</div></button>)}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="flex flex-row items-start justify-between gap-3 border-b border-slate-100 pb-4"><div><CardTitle className="text-base">Action Plan &amp; Environmental Targets</CardTitle><CardDescription>Priority initiatives for Zone 3</CardDescription></div><Badge className="bg-[#dcfce7] text-[10px] text-[#166534] shadow-none">3 active</Badge></CardHeader>
+            <CardContent className="flex flex-col gap-4 p-5">
+              <div className="rounded-xl border border-slate-200 p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-800">Evaluasi Kapasitas &amp; Efisiensi Pengomposan</p><p className="mt-1 text-xs leading-relaxed text-slate-500">Maximize organic processing to eliminate organics going to residue.</p></div><div className="flex size-12 shrink-0 items-center justify-center rounded-full border-4 border-[#bbf7d0] text-xs font-bold text-[#15803d]">85%</div></div><Progress value={85} className="mt-3 h-1.5 bg-slate-100 [&>div]:bg-[#16a34a]" /></div>
+              <div className="rounded-xl border border-slate-200 p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-slate-800">Kampanye Kesadaran Lingkungan</p><p className="mt-1 text-xs leading-relaxed text-slate-500">Residential &amp; worker socialization to reduce daily generation rate.</p></div><Badge className="shrink-0 bg-[#ccfbf1] text-[10px] text-[#0f766e] shadow-none">Active Campaign</Badge></div></div>
+              <div className="rounded-xl border border-slate-200 p-4"><p className="text-sm font-bold text-slate-800">Audit Sampah Berkala</p><p className="mt-1 text-xs leading-relaxed text-slate-500">Monthly waste composition evaluation to identify top residual items.</p><div className="mt-3 flex items-center gap-2 text-xs font-semibold text-[#0f766e]"><ClipboardCheck className="size-4" /> Next Audit: 25 Sept 2026</div></div>
+              <Button type="button" variant="outline" className="mt-1 w-full" onClick={() => setIsDialogOpen(true)}><Plus data-icon="inline-start" /> Add Action Item</Button>
+            </CardContent>
+          </Card>
+        </section>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogContent><DialogHeader><DialogTitle>Add action item</DialogTitle><DialogDescription>Create a new environmental target for Zone 3.</DialogDescription></DialogHeader><div className="flex flex-col gap-3"><label htmlFor="action-title" className="text-sm font-medium">Action title</label><input id="action-title" placeholder="e.g. Optimize collection route" className="h-9 rounded-lg border border-slate-200 px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0d9488]/30" /><Button type="button" onClick={() => setIsDialogOpen(false)}>Save action item</Button></div></DialogContent></Dialog>
 
         <section className="mt-8 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
           <Card className="border-slate-200 shadow-sm"><CardHeader className="flex flex-row items-start justify-between"><div><CardTitle className="text-base">Monthly waste overview</CardTitle><CardDescription>Total timbulan and recovery rate</CardDescription></div><BarChart3 className="size-5 text-slate-400" /></CardHeader><CardContent><div className="flex h-52 items-end gap-5 border-b border-l border-slate-200 px-4 pb-0 pt-4 sm:gap-10"><div className="flex h-full flex-1 flex-col justify-between text-[10px] text-slate-400"><span>20 t</span><span>15 t</span><span>10 t</span><span>5 t</span><span>0 t</span></div>{monthlyData.map((item) => <div key={item.month} className="flex h-full flex-1 flex-col items-center justify-end gap-2"><div className="relative flex h-[86%] w-full max-w-16 items-end rounded-t-md bg-[#d1fae5]"><div className="w-full rounded-t-md bg-[#16a34a]" style={{ height: `${item.total / 20 * 100}%` }} /><span className="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[10px] font-bold text-slate-600">{item.total}t</span></div><span className="pb-3 text-xs font-semibold text-slate-500">{item.month} 26</span></div>)}</div><div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500"><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-[#16a34a]" /> Timbulan</span><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-[#d1fae5]" /> Recovery band</span></div></CardContent></Card>
