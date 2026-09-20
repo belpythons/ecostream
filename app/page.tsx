@@ -20,6 +20,9 @@ import {
   Truck,
   Users,
 } from 'lucide-react'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -40,8 +43,84 @@ const monthlyData = [
   { month: 'Sep', total: 18.0, recovery: 92.2 },
 ]
 
+const analyticsData = {
+  implementation: {
+    label: 'Implementation Period (July 2026 - Present)',
+    composition: [
+      { name: 'Sampah Residu', value: 1.4, color: '#475569' },
+      { name: 'Sampah Organik', value: 12.4, color: '#16a34a' },
+      { name: 'Sampah Daur Ulang', value: 3.1, color: '#0d9488' },
+      { name: 'Sampah Guna Ulang', value: 1.1, color: '#65a30d' },
+      { name: 'Limbah B3', value: 0, color: '#dc2626' },
+    ],
+    organic: [
+      { month: 'Jul', organic: 5.2, compost: 4.4 },
+      { month: 'Agu', organic: 5.8, compost: 5.0 },
+      { month: 'Sep', organic: 6.1, compost: 5.4 },
+    ],
+    materials: [
+      { material: 'Plastik', reuse: 0.4, recycle: 0.9 },
+      { material: 'Piring Telur', reuse: 0.2, recycle: 0.4 },
+      { material: 'Thinwall', reuse: 0.1, recycle: 0.3 },
+      { material: 'Kertas', reuse: 0.1, recycle: 0.5 },
+      { material: 'Duplek', reuse: 0.1, recycle: 0.2 },
+      { material: 'Botol', reuse: 0.1, recycle: 0.4 },
+      { material: 'Kardus', reuse: 0.1, recycle: 0.4 },
+    ],
+    trend: [
+      { month: 'Jul', residue: 8.9 },
+      { month: 'Agu', residue: 8.2 },
+      { month: 'Sep', residue: 7.8 },
+    ],
+  },
+  baseline: {
+    label: 'Baseline Program (Jan - June 2026)',
+    composition: [
+      { name: 'Sampah Residu', value: 4.7, color: '#475569' },
+      { name: 'Sampah Organik', value: 8.1, color: '#16a34a' },
+      { name: 'Sampah Daur Ulang', value: 1.5, color: '#0d9488' },
+      { name: 'Sampah Guna Ulang', value: 0.4, color: '#65a30d' },
+      { name: 'Limbah B3', value: 0.1, color: '#dc2626' },
+    ],
+    organic: [
+      { month: 'Jan', organic: 3.2, compost: 1.8 },
+      { month: 'Feb', organic: 3.5, compost: 2.0 },
+      { month: 'Mar', organic: 3.7, compost: 2.1 },
+      { month: 'Apr', organic: 3.8, compost: 2.4 },
+      { month: 'May', organic: 4.1, compost: 2.8 },
+      { month: 'Jun', organic: 4.3, compost: 3.0 },
+    ],
+    materials: [
+      { material: 'Plastik', reuse: 0.1, recycle: 0.3 },
+      { material: 'Piring Telur', reuse: 0.1, recycle: 0.1 },
+      { material: 'Thinwall', reuse: 0.0, recycle: 0.1 },
+      { material: 'Kertas', reuse: 0.0, recycle: 0.2 },
+      { material: 'Duplek', reuse: 0.0, recycle: 0.1 },
+      { material: 'Botol', reuse: 0.1, recycle: 0.2 },
+      { material: 'Kardus', reuse: 0.1, recycle: 0.2 },
+    ],
+    trend: [
+      { month: 'Jan', residue: 29.5 },
+      { month: 'Feb', residue: 28.2 },
+      { month: 'Mar', residue: 26.8 },
+      { month: 'Apr', residue: 25.4 },
+      { month: 'May', residue: 24.1 },
+      { month: 'Jun', residue: 22.6 },
+    ],
+  },
+}
+
+const chartConfig = {
+  organic: { label: 'Organik Masuk', color: '#16a34a' },
+  compost: { label: 'Kompos Jadi', color: '#0d9488' },
+  reuse: { label: 'Guna Ulang', color: '#84cc16' },
+  recycle: { label: 'Daur Ulang', color: '#0d9488' },
+  residue: { label: 'Residu ke TPA', color: '#475569' },
+}
+
 export default function Page() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [activePeriod, setActivePeriod] = useState<'implementation' | 'baseline'>('implementation')
 
   return (
     <main className="min-h-screen bg-[#f6f8f7] text-slate-900">
@@ -141,6 +220,25 @@ export default function Page() {
         <section className="mt-8 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
           <Card className="border-slate-200 shadow-sm"><CardHeader className="flex flex-row items-start justify-between"><div><CardTitle className="text-base">Monthly waste overview</CardTitle><CardDescription>Total timbulan and recovery rate</CardDescription></div><BarChart3 className="size-5 text-slate-400" /></CardHeader><CardContent><div className="flex h-52 items-end gap-5 border-b border-l border-slate-200 px-4 pb-0 pt-4 sm:gap-10"><div className="flex h-full flex-1 flex-col justify-between text-[10px] text-slate-400"><span>20 t</span><span>15 t</span><span>10 t</span><span>5 t</span><span>0 t</span></div>{monthlyData.map((item) => <div key={item.month} className="flex h-full flex-1 flex-col items-center justify-end gap-2"><div className="relative flex h-[86%] w-full max-w-16 items-end rounded-t-md bg-[#d1fae5]"><div className="w-full rounded-t-md bg-[#16a34a]" style={{ height: `${item.total / 20 * 100}%` }} /><span className="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-[10px] font-bold text-slate-600">{item.total}t</span></div><span className="pb-3 text-xs font-semibold text-slate-500">{item.month} 26</span></div>)}</div><div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500"><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-[#16a34a]" /> Timbulan</span><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-[#d1fae5]" /> Recovery band</span></div></CardContent></Card>
           <Card className="border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-base">Compliance snapshot</CardTitle><CardDescription>DLH Bontang residue threshold</CardDescription></CardHeader><CardContent><div className="rounded-xl bg-[#f0fdf4] p-4"><div className="flex items-center justify-between"><span className="text-sm font-medium text-slate-600">Residu ke TPA</span><Badge className="bg-[#dcfce7] text-[#166534] shadow-none">Compliant</Badge></div><div className="mt-3 flex items-baseline gap-2"><span className="text-4xl font-bold text-[#15803d]">7.8%</span><span className="text-sm text-slate-500">of total waste</span></div><Progress value={7.8} className="mt-4 h-2 bg-[#dcfce7] [&>div]:bg-[#16a34a]" /><div className="mt-2 flex justify-between text-[11px] text-slate-500"><span>Current 7.8%</span><span>Max target 30%</span></div></div><div className="mt-5 flex items-start gap-3 border-t border-slate-100 pt-4"><ClipboardCheck className="mt-0.5 size-4 shrink-0 text-[#0d9488]" /><p className="text-xs leading-relaxed text-slate-500">Performance is <span className="font-semibold text-slate-700">22.2 percentage points</span> below the maximum residue commitment.</p></div></CardContent></Card>
+        </section>
+
+        <section className="mt-8" aria-labelledby="analytics-heading">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0d9488]">Comparative analytics</p><h3 id="analytics-heading" className="mt-1 text-xl font-bold tracking-tight text-slate-900">Program performance analytics</h3><p className="mt-1 text-sm text-slate-500">Compare mass composition, processing output, and landfill diversion by program period.</p></div><Badge variant="outline" className="w-fit gap-1.5"><span className="size-1.5 rounded-full bg-emerald-500" /> Live dataset</Badge></div>
+          <Tabs value={activePeriod} onValueChange={(value) => setActivePeriod(value as 'implementation' | 'baseline')}>
+            <TabsList className="mb-5 grid h-auto w-full max-w-xl grid-cols-2 bg-slate-100 p-1"><TabsTrigger value="implementation" className="py-2 text-xs sm:text-sm">Implementation Period (July 2026 - Present)</TabsTrigger><TabsTrigger value="baseline" className="py-2 text-xs sm:text-sm">Baseline Program (Jan - June 2026)</TabsTrigger></TabsList>
+            {(['implementation', 'baseline'] as const).map((period) => {
+              const data = analyticsData[period]
+              const total = data.composition.reduce((sum, item) => sum + item.value, 0)
+              return <TabsContent key={period} value={period} className="mt-0 space-y-5">
+                <div className="grid gap-5 xl:grid-cols-3">
+                  <Card className="border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-base">Komposisi Timbulan Sampah Zone 3</CardTitle><CardDescription>{data.label}</CardDescription></CardHeader><CardContent><div className="relative"><ChartContainer config={{ composition: { label: 'Composition', color: '#16a34a' } }} className="mx-auto h-[230px] w-full"><PieChart><Tooltip content={<ChartTooltipContent hideLabel />} /><Pie data={data.composition} dataKey="value" nameKey="name" innerRadius={66} outerRadius={90} paddingAngle={2}>{data.composition.map((entry) => <Cell key={entry.name} fill={entry.color} />)}</Pie></PieChart></ChartContainer><div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"><span className="text-2xl font-bold text-slate-900">{total.toFixed(1)}</span><span className="text-[11px] text-slate-500">Total Ton</span></div></div><div className="mt-2 grid grid-cols-2 gap-2">{data.composition.map((item) => <div key={item.name} className="flex items-center gap-2 text-[11px] text-slate-600"><span className="size-2 rounded-full" style={{ backgroundColor: item.color }} />{item.name}<span className="ml-auto font-mono font-bold">{item.value}t</span></div>)}</div></CardContent></Card>
+                  <Card className="border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-base">Volume Sampah Organik &amp; Kompos yang Dihasilkan (Bulanan)</CardTitle><CardDescription>Incoming organic material versus finished compost</CardDescription></CardHeader><CardContent><ChartContainer config={chartConfig} className="h-[290px] w-full"><BarChart data={data.organic} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}><CartesianGrid vertical={false} strokeDasharray="3 3" /><XAxis dataKey="month" tickLine={false} axisLine={false} /><YAxis tickLine={false} axisLine={false} unit="t" /><Tooltip content={<ChartTooltipContent />} /><Legend verticalAlign="top" height={32} /><Bar dataKey="organic" fill="var(--color-organic)" radius={[4, 4, 0, 0]} /><Bar dataKey="compost" fill="var(--color-compost)" radius={[4, 4, 0, 0]} /></BarChart></ChartContainer></CardContent></Card>
+                  <Card className="border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-base">Distribusi Sampah Anorganik (Guna Ulang &amp; Daur Ulang)</CardTitle><CardDescription>Material recovery by destination</CardDescription></CardHeader><CardContent><ChartContainer config={chartConfig} className="h-[290px] w-full"><BarChart layout="vertical" data={data.materials} margin={{ top: 4, right: 8, left: 4, bottom: 0 }}><CartesianGrid horizontal={false} strokeDasharray="3 3" /><XAxis type="number" tickLine={false} axisLine={false} unit="t" /><YAxis dataKey="material" type="category" width={72} tickLine={false} axisLine={false} tick={{ fontSize: 10 }} /><Tooltip content={<ChartTooltipContent />} /><Legend verticalAlign="top" height={32} /><Bar dataKey="reuse" fill="var(--color-reuse)" radius={[0, 4, 4, 0]} /><Bar dataKey="recycle" fill="var(--color-recycle)" radius={[0, 4, 4, 0]} /></BarChart></ChartContainer></CardContent></Card>
+                </div>
+                <Card className="border-slate-200 shadow-sm"><CardHeader className="flex flex-row items-start justify-between gap-3"><div><CardTitle className="text-base">Volume Pembuangan Sampah Residu ke TPA Bontang Lestari (Year to Date)</CardTitle><CardDescription>Monthly residue share against the 30% maximum ceiling</CardDescription></div><Badge className="bg-[#dcfce7] text-[#166534] shadow-none">Policy compliant</Badge></CardHeader><CardContent><ChartContainer config={chartConfig} className="h-[260px] w-full"><AreaChart data={data.trend} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}><defs><linearGradient id={`residue-fill-${period}`} x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#64748b" stopOpacity={0.25} /><stop offset="95%" stopColor="#64748b" stopOpacity={0.02} /></linearGradient></defs><CartesianGrid vertical={false} strokeDasharray="3 3" /><XAxis dataKey="month" tickLine={false} axisLine={false} /><YAxis domain={[0, 35]} tickLine={false} axisLine={false} unit="%" /><Tooltip content={<ChartTooltipContent />} /><ReferenceLine y={30} stroke="#dc2626" strokeDasharray="5 5" label={{ value: '30% max ceiling', position: 'insideTopRight', fill: '#b91c1c', fontSize: 11 }} /><Area type="monotone" dataKey="residue" stroke="#475569" strokeWidth={2.5} fill={`url(#residue-fill-${period})`} dot={{ r: 4, fill: '#0d9488' }} /></AreaChart></ChartContainer><div className="mt-2 flex flex-wrap gap-2"><Badge variant="outline" className="gap-1.5 text-[#166534]"><Check className="size-3" /> Below policy threshold</Badge><Badge variant="outline" className="gap-1.5 text-[#0f766e]"><ShieldCheck className="size-3" /> Continuous improvement trend</Badge></div></CardContent></Card>
+              </TabsContent>
+            })}
+          </Tabs>
         </section>
 
         <footer className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between"><span>EcoStream Enterprise • PT BADAK NGL • Zone 3</span><span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-emerald-500" /> Data synced from operational log</span></footer>
