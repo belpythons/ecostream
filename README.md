@@ -1,33 +1,58 @@
-# ecostream
+# EcoStream Enterprise
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+Sistem monitoring pengelolaan sampah & neraca massa **Zone 3 PT Badak NGL**
+(Nursery & Residential Facility), menggantikan rekapitulasi manual
+`Database Pengelolaan Sampah Nursery.xlsx`.
 
-## Built with v0
+## Aturan bisnis yang ditegakkan kode
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+| Aturan | Sumber | Implementasi |
+| --- | --- | --- |
+| `Total = Organik + Anorganik + B3 + Residu` | PRD 3.2 | `computeMassBalance()` |
+| Δ neraca ≤ **2%** → `BALANCED`, > 2% → `DISCREPANCY` | PRD 3.2 | `MASS_BALANCE_TOLERANCE_PERCENT` |
+| Residu ke TPA Bontang Lestari maks **30.0%** | Komitmen DLH Kota Bontang | `DLH_RESIDUE_LIMIT_PERCENT` |
+| Residu > 30% → alert + **catatan alasan operasional wajib** sebelum simpan | BRD 2.4 | `validateForSubmission()` |
+| Peringatan dini pada residu > 25% | OKR KR 1.2 | `classifyCompliance()` |
+| Recovery rate = `((Organik + Anorganik) / Total) × 100`, target ≥ 85% | OKR Objective 2 | `computeMassBalance()` |
+| 7 kategori anorganik, dipisah Guna Ulang vs Daur Ulang | PRD 3.3 | `INORGANIC_CATEGORIES` |
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_AvPuA0jz1fK5DcrqDynL89AtNEkw)
+Semua ambang batas berada di satu tempat (`lib/mass-balance.ts`). Tidak ada
+persentase, status, atau label kepatuhan yang di-hardcode di layer UI.
 
-## Getting Started
+## Arsitektur
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+```
+lib/mass-balance.ts    Domain murni: tipe ketat, formula, guardrail. Tanpa React.
+lib/eco-data.ts        Mock data timbangan (kg mentah). Turunan dihitung runtime.
+lib/design-tokens.ts   Token warna semantik aliran massa & level kepatuhan.
+components/ecostream/  Komponen presentasi; menerima MassBalanceResult, tidak menghitung.
+app/globals.css        Token CSS light/dark + utility `touch-target` (44px) & `numeric`.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Alasan pemisahan: kalkulasi kepatuhan lingkungan harus dapat diaudit dan diuji
+tanpa merender UI, dan harus identik antara dashboard, tabel neraca, dan form
+entri harian.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Aksesibilitas (WCAG 2.1 AA)
 
-## Learn More
+- Setiap indikator status menyandingkan **warna + ikon + label teks**
+  (`components/ecostream/status-indicator.tsx`), tidak pernah warna saja.
+- Seluruh tombol, input, select, dan segmented control memiliki target sentuh
+  minimal **44×44 px** untuk operasional tablet di lapangan.
+- Token warna memiliki varian gelap terpisah agar rasio kontras tetap terjaga.
+- Tema light/dark diterapkan lewat kelas pada `<html>` sebelum paint pertama,
+  sehingga varian Tailwind `dark:` dan token CSS selalu sinkron.
 
-To learn more, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+Next.js 16 (App Router) · TypeScript strict · Tailwind CSS v4 · Shadcn UI
+(Base UI primitives) · Recharts · Lucide React.
+
+## Menjalankan
+
+```bash
+pnpm install
+pnpm dev        # http://localhost:3000
+pnpm typecheck  # tsc --noEmit
+pnpm build
+```
