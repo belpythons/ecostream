@@ -65,8 +65,9 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-2 right-2"
-                size="icon-sm"
+                /* touch-target: WCAG 2.1 AA 2.5.5 — operator lapangan memakai tablet. */
+                className="touch-target absolute top-2 right-2"
+                size="icon"
               />
             }
           >

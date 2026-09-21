@@ -153,6 +153,70 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   EcoStream Enterprise — token semantik aliran massa & kepatuhan DLH Bontang.
+   Nilai identik dengan `lib/design-tokens.ts` (Recharts butuh hex literal).
+   --------------------------------------------------------------------------- */
+
+@theme inline {
+  --color-stream-organic: var(--stream-organic);
+  --color-stream-inorganic: var(--stream-inorganic);
+  --color-stream-reuse: var(--stream-reuse);
+  --color-stream-b3: var(--stream-b3);
+  --color-stream-residue: var(--stream-residue);
+  --color-compliance-safe: var(--compliance-safe);
+  --color-compliance-warning: var(--compliance-warning);
+  --color-compliance-danger: var(--compliance-danger);
+}
+
+:root {
+  --stream-organic: #16a34a;  /* emerald-600 — Organik / Kompos      */
+  --stream-inorganic: #0d9488; /* teal-600    — Anorganik / Daur Ulang */
+  --stream-reuse: #0284c7;     /* sky-600     — Guna Ulang            */
+  --stream-b3: #dc2626;        /* red-600     — Limbah B3             */
+  --stream-residue: #475569;   /* slate-600   — Residu TPA            */
+  --compliance-safe: #10b981;    /* residu <= 25%        */
+  --compliance-warning: #f59e0b; /* residu 25.1% – 30.0% */
+  --compliance-danger: #ef4444;  /* residu > 30.0%       */
+}
+
+.dark {
+  /* Dinaikkan luminansinya agar tetap >= 3:1 terhadap permukaan gelap. */
+  --stream-organic: #4ade80;
+  --stream-inorganic: #2dd4bf;
+  --stream-reuse: #38bdf8;
+  --stream-b3: #f87171;
+  --stream-residue: #94a3b8;
+  --compliance-safe: #34d399;
+  --compliance-warning: #fbbf24;
+  --compliance-danger: #f87171;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --stream-organic: #4ade80;
+    --stream-inorganic: #2dd4bf;
+    --stream-reuse: #38bdf8;
+    --stream-b3: #f87171;
+    --stream-residue: #94a3b8;
+    --compliance-safe: #34d399;
+    --compliance-warning: #fbbf24;
+    --compliance-danger: #f87171;
+  }
+}
+
+/* Target sentuh minimum WCAG 2.1 AA (2.5.5) untuk operator tablet di lapangan. */
+@utility touch-target {
+  min-block-size: 2.75rem; /* 44px */
+  min-inline-size: 2.75rem;
+}
+
+/* Angka tabular agar kolom neraca massa sejajar antar baris. */
+@utility numeric {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
